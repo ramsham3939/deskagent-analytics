@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,6 +7,7 @@ import { Executive, ExecutiveStats as ExecutiveStatsType } from '@/utils/types';
 import CallVolumeChart from './CallVolumeChart';
 import SentimentChart from './SentimentChart';
 import DominantEmotionChart from './DominantEmotionChart';
+import CustomerEmotionsBarChart from './CustomerEmotionsBarChart';
 
 interface ExecutiveStatsProps {
   executive: Executive;
@@ -146,31 +146,38 @@ const ExecutiveStats: React.FC<ExecutiveStatsProps> = ({ executive, stats }) => 
             </CardContent>
           </Card>
           
-          <DominantEmotionChart 
+          <CustomerEmotionsBarChart 
             data={stats.emotionsData || []} 
             dominantEmotion={stats.dominantEmotion}
           />
         </div>
         
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Top Conversation Topics</CardTitle>
-            <CardDescription>Most frequent customer inquiries</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats.topTopics.map((topic, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{topic.topic}</span>
-                    <span className="text-muted-foreground">{topic.count} calls</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DominantEmotionChart 
+            data={stats.emotionsData || []} 
+            dominantEmotion={stats.dominantEmotion}
+          />
+          
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>Top Conversation Topics</CardTitle>
+              <CardDescription>Most frequent customer inquiries</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.topTopics.map((topic, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{topic.topic}</span>
+                      <span className="text-muted-foreground">{topic.count} calls</span>
+                    </div>
+                    <Progress value={(topic.count / stats.topTopics[0].count) * 100} className="h-2" />
                   </div>
-                  <Progress value={(topic.count / stats.topTopics[0].count) * 100} className="h-2" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
