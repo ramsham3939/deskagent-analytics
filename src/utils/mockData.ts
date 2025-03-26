@@ -1,4 +1,3 @@
-
 import { User, Executive, Call, DashboardStats, ExecutiveStats } from './types';
 
 export const users: User[] = [
@@ -24,6 +23,7 @@ export const executives: Executive[] = [
     resolvedCalls: 235,
     averageHandlingTime: 8.5,
     satisfactionScore: 4.7,
+    dominantEmotion: 'happy',
   },
   {
     id: '2',
@@ -38,6 +38,7 @@ export const executives: Executive[] = [
     resolvedCalls: 180,
     averageHandlingTime: 6.2,
     satisfactionScore: 4.5,
+    dominantEmotion: 'neutral',
   },
   {
     id: '3',
@@ -52,6 +53,7 @@ export const executives: Executive[] = [
     resolvedCalls: 201,
     averageHandlingTime: 7.8,
     satisfactionScore: 4.6,
+    dominantEmotion: 'satisfied',
   },
   {
     id: '4',
@@ -66,6 +68,7 @@ export const executives: Executive[] = [
     resolvedCalls: 158,
     averageHandlingTime: 9.1,
     satisfactionScore: 4.2,
+    dominantEmotion: 'confused',
   },
   {
     id: '5',
@@ -80,6 +83,7 @@ export const executives: Executive[] = [
     resolvedCalls: 187,
     averageHandlingTime: 7.3,
     satisfactionScore: 4.4,
+    dominantEmotion: 'happy',
   }
 ];
 
@@ -93,11 +97,10 @@ export const generateCalls = (): Call[] => {
   ];
   const sentiments: Array<'positive' | 'neutral' | 'negative'> = ['positive', 'neutral', 'negative'];
   
-  // Generate 30 calls for each executive
   executives.forEach(exec => {
     for (let i = 0; i < 30; i++) {
       const date = new Date();
-      date.setDate(date.getDate() - Math.floor(Math.random() * 30)); // Last 30 days
+      date.setDate(date.getDate() - Math.floor(Math.random() * 30));
       
       calls.push({
         id: `${exec.id}-call-${i}`,
@@ -105,10 +108,10 @@ export const generateCalls = (): Call[] => {
         customerId: `cust-${Math.floor(Math.random() * 1000)}`,
         customerName: `Customer ${Math.floor(Math.random() * 1000)}`,
         timestamp: date.toISOString(),
-        duration: Math.floor(Math.random() * 900) + 60, // 1-15 minutes in seconds
+        duration: Math.floor(Math.random() * 900) + 60,
         sentiment: sentiments[Math.floor(Math.random() * sentiments.length)],
         topic: topics[Math.floor(Math.random() * topics.length)],
-        resolved: Math.random() > 0.15, // 85% resolution rate
+        resolved: Math.random() > 0.15,
         notes: Math.random() > 0.7 ? 'Customer was satisfied with the resolution.' : undefined,
       });
     }
@@ -141,7 +144,6 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
   
   const executiveCalls = calls.filter(call => call.executiveId === executiveId);
   
-  // Count calls by month (last 12 months)
   const callsByMonth: number[] = [];
   const now = new Date();
   for (let i = 0; i < 12; i++) {
@@ -157,10 +159,9 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
       return callDate >= startDate && callDate <= endDate;
     }).length;
     
-    callsByMonth.unshift(count); // Add to beginning of array
+    callsByMonth.unshift(count);
   }
   
-  // Calculate sentiment distribution
   const sentimentCounts = {
     positive: 0,
     neutral: 0,
@@ -171,7 +172,6 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
     sentimentCounts[call.sentiment]++;
   });
   
-  // Generate some topics
   const topicCounts: Record<string, number> = {};
   executiveCalls.forEach(call => {
     topicCounts[call.topic] = (topicCounts[call.topic] || 0) + 1;
@@ -181,6 +181,14 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
     .map(([topic, count]) => ({ topic, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
+  
+  const emotionsData = [
+    { name: 'Happy', value: Math.floor(Math.random() * 40) + 10 },
+    { name: 'Satisfied', value: Math.floor(Math.random() * 30) + 15 },
+    { name: 'Neutral', value: Math.floor(Math.random() * 20) + 10 },
+    { name: 'Confused', value: Math.floor(Math.random() * 15) + 5 },
+    { name: 'Frustrated', value: Math.floor(Math.random() * 10) + 5 },
+  ];
   
   return {
     executiveId,
@@ -197,6 +205,8 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
     },
     performanceTrend: [82, 84, 87, 85, 88, 90, 89, 91, 92, 90, 93, 94],
     topTopics,
+    emotionsData,
+    dominantEmotion: executive.dominantEmotion,
   };
 };
 

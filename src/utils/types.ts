@@ -19,6 +19,7 @@ export interface Executive {
   resolvedCalls: number;
   averageHandlingTime: number;
   satisfactionScore: number;
+  dominantEmotion?: 'happy' | 'satisfied' | 'neutral' | 'confused' | 'frustrated';
 }
 
 export interface Call {
@@ -65,4 +66,6 @@ export interface ExecutiveStats {
   };
   performanceTrend: number[];
   topTopics: Array<{topic: string, count: number}>;
+  emotionsData?: Array<{name: string, value: number}>;
+  dominantEmotion?: string;
 }

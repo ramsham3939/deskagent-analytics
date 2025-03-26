@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Executive, ExecutiveStats as ExecutiveStatsType } from '@/utils/types';
 import CallVolumeChart from './CallVolumeChart';
 import SentimentChart from './SentimentChart';
+import DominantEmotionChart from './DominantEmotionChart';
 
 interface ExecutiveStatsProps {
   executive: Executive;
@@ -145,26 +146,31 @@ const ExecutiveStats: React.FC<ExecutiveStatsProps> = ({ executive, stats }) => 
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Top Conversation Topics</CardTitle>
-              <CardDescription>Most frequent customer inquiries</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stats.topTopics.map((topic, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{topic.topic}</span>
-                      <span className="text-muted-foreground">{topic.count} calls</span>
-                    </div>
-                    <Progress value={(topic.count / stats.topTopics[0].count) * 100} className="h-2" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <DominantEmotionChart 
+            data={stats.emotionsData || []} 
+            dominantEmotion={stats.dominantEmotion}
+          />
         </div>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle>Top Conversation Topics</CardTitle>
+            <CardDescription>Most frequent customer inquiries</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {stats.topTopics.map((topic, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>{topic.topic}</span>
+                    <span className="text-muted-foreground">{topic.count} calls</span>
+                  </div>
+                  <Progress value={(topic.count / stats.topTopics[0].count) * 100} className="h-2" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
