@@ -75,9 +75,10 @@ const SentimentChart: React.FC<SentimentChartProps> = ({ positive, neutral, nega
           <Tooltip
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
+                const value = payload[0].value;
                 return (
                   <div className="bg-background border border-border p-2 rounded-md shadow-sm">
-                    <p className="font-medium">{`${payload[0].name}: ${payload[0].value.toFixed(1)}%`}</p>
+                    <p className="font-medium">{`${payload[0].name}: ${typeof value === 'number' ? value.toFixed(1) : value}%`}</p>
                   </div>
                 );
               }
