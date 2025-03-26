@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { User } from '@/utils/types';
+import { ThemeToggle } from './ThemeToggle';
 
 const DashboardLayout = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -31,6 +32,9 @@ const DashboardLayout = () => {
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       
       <div className="flex-1 overflow-auto">
+        <div className="p-4 flex items-center justify-end border-b border-border">
+          <ThemeToggle />
+        </div>
         <main className="p-6 md:p-8 pt-6 min-h-[calc(100vh-4rem)]">
           <Outlet />
         </main>
