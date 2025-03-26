@@ -1,3 +1,4 @@
+
 import { User, Executive, Call, DashboardStats, ExecutiveStats } from './types';
 
 export const users: User[] = [
@@ -190,6 +191,34 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
     { name: 'Frustrated', value: Math.floor(Math.random() * 10) + 5 },
   ];
   
+  const emotionsComparisonData = [
+    { 
+      name: 'Happy', 
+      customer: Math.floor(Math.random() * 40) + 10,
+      executive: Math.floor(Math.random() * 40) + 15
+    },
+    { 
+      name: 'Satisfied', 
+      customer: Math.floor(Math.random() * 30) + 15,
+      executive: Math.floor(Math.random() * 30) + 20
+    },
+    { 
+      name: 'Neutral', 
+      customer: Math.floor(Math.random() * 20) + 10,
+      executive: Math.floor(Math.random() * 20) + 5
+    },
+    { 
+      name: 'Confused', 
+      customer: Math.floor(Math.random() * 15) + 5,
+      executive: Math.floor(Math.random() * 15)
+    },
+    { 
+      name: 'Frustrated', 
+      customer: Math.floor(Math.random() * 10) + 5,
+      executive: Math.floor(Math.random() * 10)
+    },
+  ];
+  
   return {
     executiveId,
     name: executive.name,
@@ -206,6 +235,7 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
     performanceTrend: [82, 84, 87, 85, 88, 90, 89, 91, 92, 90, 93, 94],
     topTopics,
     emotionsData,
+    emotionsComparisonData,
     dominantEmotion: executive.dominantEmotion,
   };
 };

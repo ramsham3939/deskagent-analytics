@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,6 +9,7 @@ import CallVolumeChart from './CallVolumeChart';
 import SentimentChart from './SentimentChart';
 import DominantEmotionChart from './DominantEmotionChart';
 import CustomerEmotionsBarChart from './CustomerEmotionsBarChart';
+import EmotionsComparisonChart from './EmotionsComparisonChart';
 
 interface ExecutiveStatsProps {
   executive: Executive;
@@ -151,6 +153,8 @@ const ExecutiveStats: React.FC<ExecutiveStatsProps> = ({ executive, stats }) => 
             dominantEmotion={stats.dominantEmotion}
           />
         </div>
+        
+        <EmotionsComparisonChart data={stats.emotionsComparisonData || []} />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <DominantEmotionChart 

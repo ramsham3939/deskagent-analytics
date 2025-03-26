@@ -67,5 +67,6 @@ export interface ExecutiveStats {
   performanceTrend: number[];
   topTopics: Array<{topic: string, count: number}>;
   emotionsData?: Array<{name: string, value: number}>;
+  emotionsComparisonData?: Array<{name: string, customer: number, executive: number}>;
   dominantEmotion?: string;
 }
