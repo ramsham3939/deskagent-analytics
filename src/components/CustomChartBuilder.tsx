@@ -38,7 +38,7 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, createOrGetChartData } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import {
   ChartContainer,
@@ -59,11 +59,11 @@ const chartTypes = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a855f7', '#ec4899'];
 
 interface ChartData {
-  id: number;
+  id?: number;
   category: string;
   value: number;
   label: string;
-  chart_type: string;
+  chart_type?: string;
   created_at?: string;
 }
 
@@ -82,11 +82,30 @@ const CustomChartBuilder = () => {
   const [chartData, setChartData] = useState<DataItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [insight, setInsight] = useState<string>('');
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize chart data if needed
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        await createOrGetChartData();
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error initializing chart data:', error);
+      }
+    };
+
+    if (!isInitialized) {
+      initializeData();
+    }
+  }, [isInitialized]);
 
   // Fetch available labels and categories from database on component mount
   useEffect(() => {
-    fetchAvailableOptions();
-  }, []);
+    if (isInitialized) {
+      fetchAvailableOptions();
+    }
+  }, [isInitialized]);
 
   // Fetch unique labels and categories from the chart_data table
   const fetchAvailableOptions = async () => {
@@ -109,6 +128,12 @@ const CustomChartBuilder = () => {
         
         setAvailableLabels(labels);
         setAvailableCategories(categories);
+        
+        // Set default selections if available
+        if (labels.length > 0 && categories.length > 0) {
+          setSelectedLabel(labels[0]);
+          setSelectedCategory(categories[0]);
+        }
       }
       
     } catch (error) {
@@ -125,7 +150,7 @@ const CustomChartBuilder = () => {
 
   // Generate chart data based on selected label and category
   const generateChartData = async () => {
-    if (!selectedLabel || !selectedCategory) return;
+    if (!selectedLabel) return;
     
     try {
       setLoading(true);
@@ -195,6 +220,38 @@ const CustomChartBuilder = () => {
     // Count values above average
     const aboveAverage = data.filter(item => item.value > average).length;
     
+    // Generate specialized insights based on label
+    let specializedInsight = '';
+    
+    switch (label) {
+      case 'Revenue':
+        specializedInsight = `<li>Revenue is ${highest.value > average * 1.2 ? 'significantly higher' : 'higher'} in ${highest.name}</li>
+                              <li>Consider focusing resources during ${highest.name} to maximize returns</li>`;
+        break;
+      case 'Calls':
+        specializedInsight = `<li>Call volume peaks in ${highest.name} (${highest.value} calls)</li>
+                              <li>Consider increasing staffing during peak periods</li>`;
+        break;
+      case 'Resolution Rate':
+        specializedInsight = `<li>Best resolution performance: ${highest.name} (${highest.value}%)</li>
+                              <li>Areas needing improvement: ${lowest.name} (${lowest.value}%)</li>`;
+        break;
+      case 'Customer Satisfaction':
+        specializedInsight = `<li>Highest satisfaction: ${highest.name} (${highest.value}/5)</li>
+                              <li>Customer experience should be reviewed for ${lowest.name}</li>`;
+        break;
+      case 'Call Duration':
+        specializedInsight = `<li>Longest average calls: ${highest.name} (${highest.value} minutes)</li>
+                              <li>Shortest average calls: ${lowest.name} (${lowest.value} minutes)</li>`;
+        break;
+      case 'Agent Performance':
+        specializedInsight = `<li>Top performing period: ${highest.name} (${highest.value}%)</li>
+                              <li>Training may be needed to improve ${lowest.name} performance</li>`;
+        break;
+      default:
+        specializedInsight = '';
+    }
+    
     // Generate insight text
     const insightText = `
       <span class="font-bold">Key Insights for ${label}:</span>
@@ -203,6 +260,7 @@ const CustomChartBuilder = () => {
         <li>Lowest value: ${lowest.name} (${lowest.value})</li>
         <li>Average value: ${average.toFixed(2)}</li>
         <li>${aboveAverage} out of ${data.length} categories are above average</li>
+        ${specializedInsight}
         <li>Data range: ${lowest.value} to ${highest.value}</li>
         <li>Total sum: ${sum}</li>
       </ul>
@@ -213,7 +271,7 @@ const CustomChartBuilder = () => {
 
   // Refresh data
   const handleRefresh = () => {
-    if (selectedLabel && selectedCategory) {
+    if (selectedLabel) {
       generateChartData();
       toast({
         title: "Refreshed",
@@ -232,10 +290,10 @@ const CustomChartBuilder = () => {
 
   // Update chart data when selections change
   useEffect(() => {
-    if (selectedLabel && selectedCategory) {
+    if (selectedLabel && isInitialized) {
       generateChartData();
     }
-  }, [selectedLabel, selectedCategory, chartType]);
+  }, [selectedLabel, chartType, isInitialized]);
 
   // Render the appropriate chart based on the selected chart type
   const renderChart = () => {
@@ -424,14 +482,14 @@ const CustomChartBuilder = () => {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-xl">Custom Chart Builder</CardTitle>
-            <CardDescription>Create insights from your data</CardDescription>
+            <CardDescription>Create insights from your call center data</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleRefresh}
-              disabled={loading || !selectedLabel || !selectedCategory}
+              disabled={loading || !selectedLabel}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
@@ -495,13 +553,13 @@ const CustomChartBuilder = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="category" className="text-sm font-medium">Category</Label>
+                  <Label htmlFor="category" className="text-sm font-medium">Time Period</Label>
                   <Select
                     value={selectedCategory}
                     onValueChange={setSelectedCategory}
                   >
                     <SelectTrigger id="category" className="w-full">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Select time period" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableCategories.map((category) => (
@@ -516,7 +574,7 @@ const CustomChartBuilder = () => {
                 <div className="flex items-end">
                   <Button 
                     onClick={generateChartData} 
-                    disabled={!selectedLabel || !selectedCategory || loading}
+                    disabled={!selectedLabel || loading}
                     className="w-full"
                   >
                     {loading ? 'Loading...' : 'Generate Chart'}
@@ -533,7 +591,7 @@ const CustomChartBuilder = () => {
               <div className="lg:col-span-2 border rounded-xl overflow-hidden bg-card p-4 h-full flex flex-col">
                 <h3 className="text-lg font-medium mb-4 px-2">
                   {selectedLabel ? 
-                    `${selectedLabel} by ${selectedCategory}` : 
+                    `${selectedLabel} Analysis` : 
                     'Chart Preview'}
                 </h3>
                 <div className="flex-1 flex items-center justify-center min-h-[300px]">

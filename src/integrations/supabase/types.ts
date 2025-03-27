@@ -224,6 +224,57 @@ export type Database = {
         }
         Relationships: []
       }
+      call_trends: {
+        Row: {
+          call_count: number
+          created_at: string | null
+          day_name: string
+          id: number
+        }
+        Insert: {
+          call_count: number
+          created_at?: string | null
+          day_name: string
+          id?: number
+        }
+        Update: {
+          call_count?: number
+          created_at?: string | null
+          day_name?: string
+          id?: number
+        }
+        Relationships: []
+      }
+      dashboard_stats: {
+        Row: {
+          created_at: string | null
+          id: number
+          stat_date: string
+          stat_name: string
+          stat_value: number
+          trend_is_positive: boolean | null
+          trend_value: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          stat_date?: string
+          stat_name: string
+          stat_value: number
+          trend_is_positive?: boolean | null
+          trend_value?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          stat_date?: string
+          stat_name?: string
+          stat_value?: number
+          trend_is_positive?: boolean | null
+          trend_value?: number | null
+        }
+        Relationships: []
+      }
       django_admin_log: {
         Row: {
           action_flag: number
@@ -326,6 +377,66 @@ export type Database = {
           expire_date?: string
           session_data?: string
           session_key?: string
+        }
+        Relationships: []
+      }
+      executive_performance: {
+        Row: {
+          avg_handling_time: number
+          created_at: string | null
+          executive_id: string | null
+          executive_name: string
+          id: number
+          performance_score: number
+          resolved_calls: number
+          satisfaction_score: number
+          status: string
+          total_calls: number
+        }
+        Insert: {
+          avg_handling_time: number
+          created_at?: string | null
+          executive_id?: string | null
+          executive_name: string
+          id?: number
+          performance_score: number
+          resolved_calls: number
+          satisfaction_score: number
+          status: string
+          total_calls: number
+        }
+        Update: {
+          avg_handling_time?: number
+          created_at?: string | null
+          executive_id?: string | null
+          executive_name?: string
+          id?: number
+          performance_score?: number
+          resolved_calls?: number
+          satisfaction_score?: number
+          status?: string
+          total_calls?: number
+        }
+        Relationships: []
+      }
+      sentiment_distribution: {
+        Row: {
+          created_at: string | null
+          id: number
+          percentage: number
+          sentiment_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          percentage: number
+          sentiment_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          percentage?: number
+          sentiment_type?: string
         }
         Relationships: []
       }
