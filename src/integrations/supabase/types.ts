@@ -9,87 +9,323 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      auth_group: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id?: number
+          name: string
+        }
+        Update: {
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      auth_group_permissions: {
+        Row: {
+          group_id: number
+          id: number
+          permission_id: number
+        }
+        Insert: {
+          group_id: number
+          id?: number
+          permission_id: number
+        }
+        Update: {
+          group_id?: number
+          id?: number
+          permission_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "auth_permission"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auth_group_permissions_group_id_b120cbf9_fk_auth_group_id"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "auth_group"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auth_permission: {
+        Row: {
+          codename: string
+          content_type_id: number
+          id: number
+          name: string
+        }
+        Insert: {
+          codename: string
+          content_type_id: number
+          id?: number
+          name: string
+        }
+        Update: {
+          codename?: string
+          content_type_id?: number
+          id?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auth_permission_content_type_id_2f476e4b_fk_django_co"
+            columns: ["content_type_id"]
+            isOneToOne: false
+            referencedRelation: "django_content_type"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auth_user: {
+        Row: {
+          date_joined: string
+          email: string
+          first_name: string
+          id: number
+          is_active: boolean
+          is_staff: boolean
+          is_superuser: boolean
+          last_login: string | null
+          last_name: string
+          password: string
+          username: string
+        }
+        Insert: {
+          date_joined: string
+          email: string
+          first_name: string
+          id?: number
+          is_active: boolean
+          is_staff: boolean
+          is_superuser: boolean
+          last_login?: string | null
+          last_name: string
+          password: string
+          username: string
+        }
+        Update: {
+          date_joined?: string
+          email?: string
+          first_name?: string
+          id?: number
+          is_active?: boolean
+          is_staff?: boolean
+          is_superuser?: boolean
+          last_login?: string | null
+          last_name?: string
+          password?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      auth_user_groups: {
+        Row: {
+          group_id: number
+          id: number
+          user_id: number
+        }
+        Insert: {
+          group_id: number
+          id?: number
+          user_id: number
+        }
+        Update: {
+          group_id?: number
+          id?: number
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auth_user_groups_group_id_97559544_fk_auth_group_id"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "auth_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auth_user_groups_user_id_6a12ed8b_fk_auth_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "auth_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auth_user_user_permissions: {
+        Row: {
+          id: number
+          permission_id: number
+          user_id: number
+        }
+        Insert: {
+          id?: number
+          permission_id: number
+          user_id: number
+        }
+        Update: {
+          id?: number
+          permission_id?: number
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "auth_permission"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "auth_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_data: {
         Row: {
-          audio_url: string | null
-          created_at: string | null
-          email: string | null
-          emotion_analysis: string | null
-          id: number | null
-          suggestions: string | null
-          transcription: string | null
+          audio_url: string
+          created_at: string
+          email: string
+          emotion_analysis: string
+          id: number
+          suggestions: string
+          transcription: string
         }
         Insert: {
-          audio_url?: string | null
-          created_at?: string | null
-          email?: string | null
-          emotion_analysis?: string | null
-          id?: number | null
-          suggestions?: string | null
-          transcription?: string | null
+          audio_url: string
+          created_at: string
+          email: string
+          emotion_analysis: string
+          id?: number
+          suggestions: string
+          transcription: string
         }
         Update: {
-          audio_url?: string | null
-          created_at?: string | null
-          email?: string | null
-          emotion_analysis?: string | null
-          id?: number | null
-          suggestions?: string | null
-          transcription?: string | null
+          audio_url?: string
+          created_at?: string
+          email?: string
+          emotion_analysis?: string
+          id?: number
+          suggestions?: string
+          transcription?: string
         }
         Relationships: []
       }
-      calls: {
+      django_admin_log: {
         Row: {
-          answer: string | null
-          ice_candidates: Json | null
+          action_flag: number
+          action_time: string
+          change_message: string
+          content_type_id: number | null
           id: number
-          offer: string | null
-          status: Database["public"]["Enums"]["calling_stutus"] | null
-          timestamp: string | null
+          object_id: string | null
+          object_repr: string
+          user_id: number
         }
         Insert: {
-          answer?: string | null
-          ice_candidates?: Json | null
+          action_flag: number
+          action_time: string
+          change_message: string
+          content_type_id?: number | null
           id?: number
-          offer?: string | null
-          status?: Database["public"]["Enums"]["calling_stutus"] | null
-          timestamp?: string | null
+          object_id?: string | null
+          object_repr: string
+          user_id: number
         }
         Update: {
-          answer?: string | null
-          ice_candidates?: Json | null
+          action_flag?: number
+          action_time?: string
+          change_message?: string
+          content_type_id?: number | null
           id?: number
-          offer?: string | null
-          status?: Database["public"]["Enums"]["calling_stutus"] | null
-          timestamp?: string | null
+          object_id?: string | null
+          object_repr?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "django_admin_log_content_type_id_c4bce8eb_fk_django_co"
+            columns: ["content_type_id"]
+            isOneToOne: false
+            referencedRelation: "django_content_type"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "django_admin_log_user_id_c564eba6_fk_auth_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "auth_user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      django_content_type: {
+        Row: {
+          app_label: string
+          id: number
+          model: string
+        }
+        Insert: {
+          app_label: string
+          id?: number
+          model: string
+        }
+        Update: {
+          app_label?: string
+          id?: number
+          model?: string
         }
         Relationships: []
       }
-      chart_data: {
+      django_migrations: {
         Row: {
-          category: string
-          chart_type: string
-          created_at: string | null
+          app: string
+          applied: string
           id: number
-          label: string
-          value: number
+          name: string
         }
         Insert: {
-          category: string
-          chart_type: string
-          created_at?: string | null
+          app: string
+          applied: string
           id?: number
-          label: string
-          value: number
+          name: string
         }
         Update: {
-          category?: string
-          chart_type?: string
-          created_at?: string | null
+          app?: string
+          applied?: string
           id?: number
-          label?: string
-          value?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      django_session: {
+        Row: {
+          expire_date: string
+          session_data: string
+          session_key: string
+        }
+        Insert: {
+          expire_date: string
+          session_data: string
+          session_key: string
+        }
+        Update: {
+          expire_date?: string
+          session_data?: string
+          session_key?: string
         }
         Relationships: []
       }
@@ -98,28 +334,25 @@ export type Database = {
           created_at: string
           email: string
           id: number
-          name: string | null
-          password: string | null
-          phone: number | null
-          role: string | null
+          name: string
+          pass: string
+          phone: string | null
         }
         Insert: {
           created_at: string
           email: string
           id?: number
-          name?: string | null
-          password?: string | null
-          phone?: number | null
-          role?: string | null
+          name: string
+          pass: string
+          phone?: string | null
         }
         Update: {
           created_at?: string
           email?: string
           id?: number
-          name?: string | null
-          password?: string | null
-          phone?: number | null
-          role?: string | null
+          name?: string
+          pass?: string
+          phone?: string | null
         }
         Relationships: []
       }
@@ -131,7 +364,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      calling_stutus: "idle" | "ringing" | "connected" | "ended"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
