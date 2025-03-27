@@ -1,4 +1,3 @@
-
 import { User, Executive, Call, DashboardStats, ExecutiveStats } from './types';
 
 export const users: User[] = [
@@ -24,7 +23,7 @@ export const executives: Executive[] = [
     resolvedCalls: 235,
     averageHandlingTime: 8.5,
     satisfactionScore: 4.7,
-    dominantEmotion: 'happy',
+    dominantEmotion: 'calm',
   },
   {
     id: '2',
@@ -39,7 +38,7 @@ export const executives: Executive[] = [
     resolvedCalls: 180,
     averageHandlingTime: 6.2,
     satisfactionScore: 4.5,
-    dominantEmotion: 'neutral',
+    dominantEmotion: 'empathetic',
   },
   {
     id: '3',
@@ -54,7 +53,7 @@ export const executives: Executive[] = [
     resolvedCalls: 201,
     averageHandlingTime: 7.8,
     satisfactionScore: 4.6,
-    dominantEmotion: 'satisfied',
+    dominantEmotion: 'professional',
   },
   {
     id: '4',
@@ -191,33 +190,35 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
     { name: 'Frustrated', value: Math.floor(Math.random() * 10) + 5 },
   ];
   
-  const emotionsComparisonData = [
-    { 
-      name: 'Happy', 
-      customer: Math.floor(Math.random() * 40) + 10,
-      executive: Math.floor(Math.random() * 40) + 15
-    },
-    { 
-      name: 'Satisfied', 
-      customer: Math.floor(Math.random() * 30) + 15,
-      executive: Math.floor(Math.random() * 30) + 20
-    },
-    { 
-      name: 'Neutral', 
-      customer: Math.floor(Math.random() * 20) + 10,
-      executive: Math.floor(Math.random() * 20) + 5
-    },
-    { 
-      name: 'Confused', 
-      customer: Math.floor(Math.random() * 15) + 5,
-      executive: Math.floor(Math.random() * 15)
-    },
-    { 
-      name: 'Frustrated', 
-      customer: Math.floor(Math.random() * 10) + 5,
-      executive: Math.floor(Math.random() * 10)
-    },
-  ];
+  let emotionsComparisonData;
+  
+  if (executive.dominantEmotion === 'calm' || executive.dominantEmotion === 'professional' || executive.dominantEmotion === 'empathetic') {
+    emotionsComparisonData = [
+      { name: 'Angry', customer: 65, executive: 5 },
+      { name: 'Frustrated', customer: 40, executive: 10 },
+      { name: 'Confused', customer: 30, executive: 15 },
+      { name: 'Neutral', customer: 25, executive: 25 },
+      { name: 'Calm', customer: 15, executive: 70 },
+      { name: 'Professional', customer: 10, executive: 60 },
+      { name: 'Empathetic', customer: 5, executive: 45 }
+    ];
+  } else {
+    emotionsComparisonData = [
+      { name: 'Angry', customer: 65, executive: 15 },
+      { name: 'Frustrated', customer: 40, executive: 25 },
+      { name: 'Confused', customer: 30, executive: 20 },
+      { name: 'Neutral', customer: 25, executive: 30 },
+      { name: 'Calm', customer: 15, executive: 40 },
+      { name: 'Professional', customer: 10, executive: 35 },
+      { name: 'Empathetic', customer: 5, executive: 25 }
+    ];
+  }
+  
+  const customerAngerResolutionRate = executive.dominantEmotion === 'calm' || 
+                                      executive.dominantEmotion === 'professional' || 
+                                      executive.dominantEmotion === 'empathetic' 
+                                      ? 85 + Math.floor(Math.random() * 10) 
+                                      : 65 + Math.floor(Math.random() * 15);
   
   return {
     executiveId,
@@ -237,6 +238,7 @@ export const generateExecutiveStats = (executiveId: string): ExecutiveStats => {
     emotionsData,
     emotionsComparisonData,
     dominantEmotion: executive.dominantEmotion,
+    customerAngerResolutionRate,
   };
 };
 

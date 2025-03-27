@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -19,7 +18,7 @@ export interface Executive {
   resolvedCalls: number;
   averageHandlingTime: number;
   satisfactionScore: number;
-  dominantEmotion?: 'happy' | 'satisfied' | 'neutral' | 'confused' | 'frustrated';
+  dominantEmotion?: 'happy' | 'satisfied' | 'neutral' | 'confused' | 'frustrated' | 'angry' | 'calm' | 'empathetic' | 'professional';
 }
 
 export interface Call {
@@ -33,6 +32,8 @@ export interface Call {
   topic: string;
   resolved: boolean;
   notes?: string;
+  customerEmotion?: 'happy' | 'satisfied' | 'neutral' | 'confused' | 'frustrated' | 'angry';
+  executiveEmotion?: 'happy' | 'satisfied' | 'neutral' | 'calm' | 'empathetic' | 'professional';
 }
 
 export interface DashboardStats {
@@ -67,6 +68,11 @@ export interface ExecutiveStats {
   performanceTrend: number[];
   topTopics: Array<{topic: string, count: number}>;
   emotionsData?: Array<{name: string, value: number}>;
-  emotionsComparisonData?: Array<{name: string, customer: number, executive: number}>;
+  emotionsComparisonData?: Array<{
+    name: string, 
+    customer: number, 
+    executive: number
+  }>;
   dominantEmotion?: string;
+  customerAngerResolutionRate?: number;
 }
