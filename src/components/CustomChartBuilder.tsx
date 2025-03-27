@@ -45,7 +45,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Database } from '@/integrations/supabase/types';
 import { RefreshCw, Download, BarChart2, PieChart as PieChartIcon, LineChart as LineChartIcon, Activity } from 'lucide-react';
 
 // Define chart type options
@@ -59,58 +58,64 @@ const chartTypes = [
 // Color schemes for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a855f7', '#ec4899'];
 
-// Valid table names from our database
-type TableName = 'call_data' | 'calls' | 'user';
+interface ChartData {
+  id: number;
+  category: string;
+  value: number;
+  label: string;
+  chart_type: string;
+  created_at?: string;
+}
+
+interface DataItem {
+  name: string;
+  value: number;
+}
 
 const CustomChartBuilder = () => {
   const { toast } = useToast();
   const [chartType, setChartType] = useState('bar');
-  const [xAxis, setXAxis] = useState('');
-  const [yAxis, setYAxis] = useState('');
-  const [availableFields, setAvailableFields] = useState<string[]>([]);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [selectedLabel, setSelectedLabel] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [availableLabels, setAvailableLabels] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [chartData, setChartData] = useState<DataItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [insight, setInsight] = useState<string>('');
 
-  // Fetch available fields from database on component mount
+  // Fetch available labels and categories from database on component mount
   useEffect(() => {
-    fetchAvailableFields();
+    fetchAvailableOptions();
   }, []);
 
-  // Fetch available fields from database tables
-  const fetchAvailableFields = async () => {
+  // Fetch unique labels and categories from the chart_data table
+  const fetchAvailableOptions = async () => {
     try {
       setLoading(true);
       
-      // Get valid table names from our database
-      const tables: TableName[] = ['call_data', 'calls', 'user'];
-      const fields: string[] = [];
+      // Fetch all chart data to extract unique labels and categories
+      const { data, error } = await supabase
+        .from('chart_data')
+        .select('*');
       
-      // Fetch schema from each table
-      for (const table of tables) {
-        const { data, error } = await supabase
-          .from(table)
-          .select('*')
-          .limit(1);
-        
-        if (error) {
-          console.error(`Error fetching ${table} fields:`, error);
-          continue;
-        }
-        
-        if (data && data.length > 0) {
-          Object.keys(data[0]).forEach(key => {
-            fields.push(`${table}.${key}`);
-          });
-        }
+      if (error) {
+        throw error;
       }
       
-      setAvailableFields(fields);
+      if (data) {
+        // Extract unique labels and categories
+        const labels = [...new Set(data.map(item => item.label))];
+        const categories = [...new Set(data.map(item => item.category))];
+        
+        setAvailableLabels(labels);
+        setAvailableCategories(categories);
+      }
+      
     } catch (error) {
-      console.error('Error fetching available fields:', error);
+      console.error('Error fetching available options:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch available fields",
+        description: "Failed to fetch available chart options",
         variant: "destructive"
       });
     } finally {
@@ -118,77 +123,48 @@ const CustomChartBuilder = () => {
     }
   };
 
-  // Generate chart data based on selected fields
+  // Generate chart data based on selected label and category
   const generateChartData = async () => {
-    if (!xAxis || !yAxis) return;
+    if (!selectedLabel || !selectedCategory) return;
     
     try {
       setLoading(true);
       
-      // Extract table and field names
-      const [xTable, xField] = xAxis.split('.');
-      const [yTable, yField] = yAxis.split('.');
+      let query = supabase
+        .from('chart_data')
+        .select('*');
       
-      let data: any[] = [];
-      
-      // Validate table names - only proceed with valid tables
-      if (!['call_data', 'calls', 'user'].includes(xTable) || 
-          !['call_data', 'calls', 'user'].includes(yTable)) {
-        throw new Error('Invalid table name');
+      if (selectedLabel) {
+        query = query.eq('label', selectedLabel);
       }
       
-      // Handle as valid TableName type
-      const validXTable = xTable as TableName;
-      const validYTable = yTable as TableName;
+      const { data, error } = await query;
       
-      // Simple case: x and y from the same table
-      if (xTable === yTable) {
-        const { data: tableData, error } = await supabase
-          .from(validXTable)
-          .select(`${xField},${yField}`);
-          
-        if (error) throw error;
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        // Filter and format data for the chart
+        const formattedData: DataItem[] = data
+          .filter(item => item.chart_type === chartType || item.chart_type === 'all')
+          .map(item => ({
+            name: item.category,
+            value: item.value
+          }));
         
-        data = tableData.map(item => ({
-          name: item[xField as keyof typeof item]?.toString() || 'Unknown',
-          value: typeof item[yField as keyof typeof item] === 'number' 
-            ? item[yField as keyof typeof item] 
-            : 0
-        }));
-      }
-      // When fields are from different tables (simplified approach)
-      else {
-        // First table query
-        const { data: xData, error: xError } = await supabase
-          .from(validXTable)
-          .select(`id,${xField}`);
-          
-        // Second table query  
-        const { data: yData, error: yError } = await supabase
-          .from(validYTable)
-          .select(`id,${yField}`);
-          
-        if (xError || yError) throw new Error('Error fetching data');
+        // Sort data for better visualization
+        formattedData.sort((a, b) => b.value - a.value);
         
-        // Map data together (simplified for demonstration)
-        data = xData.slice(0, 10).map((xItem, index) => ({
-          name: xItem[xField as keyof typeof xItem]?.toString() || 'Unknown',
-          value: index < yData.length && typeof yData[index][yField as keyof typeof yData[0]] === 'number' 
-            ? yData[index][yField as keyof typeof yData[0]] 
-            : Math.floor(Math.random() * 100) // Fallback to random data for demo
-        }));
+        // Generate insights based on data
+        generateInsights(formattedData, selectedLabel);
+        
+        setChartData(formattedData);
+      } else {
+        setChartData([]);
+        setInsight('No data available for the selected criteria.');
       }
       
-      // Sort data for better visualization
-      data.sort((a, b) => b.value - a.value);
-      
-      // Limit to top 10 results for better visualization
-      const finalData = data.slice(0, 10);
-      
-      // Generate insights based on data
-      generateInsights(finalData, xField, yField);
-      
-      setChartData(finalData);
     } catch (error) {
       console.error('Error generating chart data:', error);
       toast({
@@ -202,7 +178,7 @@ const CustomChartBuilder = () => {
   };
 
   // Generate insights based on chart data
-  const generateInsights = (data: any[], xField: string, yField: string) => {
+  const generateInsights = (data: DataItem[], label: string) => {
     if (!data || data.length === 0) {
       setInsight('No data available for insights.');
       return;
@@ -221,13 +197,14 @@ const CustomChartBuilder = () => {
     
     // Generate insight text
     const insightText = `
-      <span class="font-bold">Key Insights:</span>
+      <span class="font-bold">Key Insights for ${label}:</span>
       <ul class="list-disc list-inside mt-2 space-y-1">
-        <li>Highest ${yField}: ${highest.name} (${highest.value})</li>
-        <li>Lowest ${yField}: ${lowest.name} (${lowest.value})</li>
-        <li>Average ${yField}: ${average.toFixed(2)}</li>
-        <li>${aboveAverage} out of ${data.length} ${xField}s are above average</li>
+        <li>Highest value: ${highest.name} (${highest.value})</li>
+        <li>Lowest value: ${lowest.name} (${lowest.value})</li>
+        <li>Average value: ${average.toFixed(2)}</li>
+        <li>${aboveAverage} out of ${data.length} categories are above average</li>
         <li>Data range: ${lowest.value} to ${highest.value}</li>
+        <li>Total sum: ${sum}</li>
       </ul>
     `;
     
@@ -236,7 +213,7 @@ const CustomChartBuilder = () => {
 
   // Refresh data
   const handleRefresh = () => {
-    if (xAxis && yAxis) {
+    if (selectedLabel && selectedCategory) {
       generateChartData();
       toast({
         title: "Refreshed",
@@ -253,12 +230,12 @@ const CustomChartBuilder = () => {
     });
   };
 
-  // Update chart data when axes change
+  // Update chart data when selections change
   useEffect(() => {
-    if (xAxis && yAxis) {
+    if (selectedLabel && selectedCategory) {
       generateChartData();
     }
-  }, [xAxis, yAxis, chartType]);
+  }, [selectedLabel, selectedCategory, chartType]);
 
   // Render the appropriate chart based on the selected chart type
   const renderChart = () => {
@@ -266,7 +243,7 @@ const CustomChartBuilder = () => {
       return (
         <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
           <BarChart2 className="h-12 w-12 mb-4 opacity-20" />
-          <p>Select X and Y axis fields to generate chart</p>
+          <p>Select label and category to generate chart</p>
         </div>
       );
     }
@@ -454,7 +431,7 @@ const CustomChartBuilder = () => {
               variant="outline" 
               size="sm" 
               onClick={handleRefresh}
-              disabled={loading || !xAxis || !yAxis}
+              disabled={loading || !selectedLabel || !selectedCategory}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
@@ -499,18 +476,18 @@ const CustomChartBuilder = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="x-axis" className="text-sm font-medium">X-Axis / Category</Label>
+                  <Label htmlFor="label" className="text-sm font-medium">Data Series</Label>
                   <Select
-                    value={xAxis}
-                    onValueChange={setXAxis}
+                    value={selectedLabel}
+                    onValueChange={setSelectedLabel}
                   >
-                    <SelectTrigger id="x-axis" className="w-full">
-                      <SelectValue placeholder="Select X-Axis field" />
+                    <SelectTrigger id="label" className="w-full">
+                      <SelectValue placeholder="Select data series" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableFields.map((field) => (
-                        <SelectItem key={field} value={field}>
-                          {field}
+                      {availableLabels.map((label) => (
+                        <SelectItem key={label} value={label}>
+                          {label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -518,18 +495,18 @@ const CustomChartBuilder = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="y-axis" className="text-sm font-medium">Y-Axis / Values</Label>
+                  <Label htmlFor="category" className="text-sm font-medium">Category</Label>
                   <Select
-                    value={yAxis}
-                    onValueChange={setYAxis}
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
                   >
-                    <SelectTrigger id="y-axis" className="w-full">
-                      <SelectValue placeholder="Select Y-Axis field" />
+                    <SelectTrigger id="category" className="w-full">
+                      <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableFields.map((field) => (
-                        <SelectItem key={field} value={field}>
-                          {field}
+                      {availableCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -539,7 +516,7 @@ const CustomChartBuilder = () => {
                 <div className="flex items-end">
                   <Button 
                     onClick={generateChartData} 
-                    disabled={!xAxis || !yAxis || loading}
+                    disabled={!selectedLabel || !selectedCategory || loading}
                     className="w-full"
                   >
                     {loading ? 'Loading...' : 'Generate Chart'}
@@ -555,8 +532,8 @@ const CustomChartBuilder = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 h-full">
               <div className="lg:col-span-2 border rounded-xl overflow-hidden bg-card p-4 h-full flex flex-col">
                 <h3 className="text-lg font-medium mb-4 px-2">
-                  {xAxis && yAxis ? 
-                    `${yAxis.split('.')[1]} by ${xAxis.split('.')[1]}` : 
+                  {selectedLabel ? 
+                    `${selectedLabel} by ${selectedCategory}` : 
                     'Chart Preview'}
                 </h3>
                 <div className="flex-1 flex items-center justify-center min-h-[300px]">

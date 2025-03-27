@@ -66,6 +66,33 @@ export type Database = {
         }
         Relationships: []
       }
+      chart_data: {
+        Row: {
+          category: string
+          chart_type: string
+          created_at: string | null
+          id: number
+          label: string
+          value: number
+        }
+        Insert: {
+          category: string
+          chart_type: string
+          created_at?: string | null
+          id?: number
+          label: string
+          value: number
+        }
+        Update: {
+          category?: string
+          chart_type?: string
+          created_at?: string | null
+          id?: number
+          label?: string
+          value?: number
+        }
+        Relationships: []
+      }
       user: {
         Row: {
           created_at: string
