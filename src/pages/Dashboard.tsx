@@ -25,6 +25,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import CustomChartBuilder from '@/components/CustomChartBuilder';
 
 const Dashboard = () => {
   // Prepare data for charts
@@ -47,6 +48,9 @@ const Dashboard = () => {
           Overview of call center performance and key metrics
         </p>
       </div>
+
+      {/* Custom Chart Builder */}
+      <CustomChartBuilder />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatisticCard
