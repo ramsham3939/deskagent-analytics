@@ -38,9 +38,9 @@ const ProductivityRadarChart: React.FC<ProductivityRadarChartProps> = ({
   executives = ['This Executive', 'Team Average']
 }) => {
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle>{title}</CardTitle>
+    <Card className="h-full shadow-md hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="pb-2 bg-gradient-to-r from-card to-background rounded-t-lg">
+        <CardTitle className="text-lg">{title}</CardTitle>
         <CardDescription>{subtitle}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -50,19 +50,22 @@ const ProductivityRadarChart: React.FC<ProductivityRadarChartProps> = ({
               <PolarGrid stroke="hsl(var(--border))" />
               <PolarAngleAxis 
                 dataKey="subject" 
-                tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+                tick={{ fill: 'hsl(var(--foreground))', fontSize: 12, fontWeight: 500 }}
               />
               <PolarRadiusAxis 
                 angle={30} 
                 domain={[0, 100]} 
                 tick={{ fill: 'hsl(var(--foreground))', fontSize: 10 }}
+                strokeOpacity={0.5}
               />
               <Radar
                 name={executives[0]}
                 dataKey="A"
                 stroke="#8884d8"
                 fill="#8884d8"
-                fillOpacity={0.3}
+                fillOpacity={0.6}
+                animationDuration={1500}
+                animationBegin={300}
               />
               {data[0].B !== undefined && (
                 <Radar
@@ -70,14 +73,27 @@ const ProductivityRadarChart: React.FC<ProductivityRadarChartProps> = ({
                   dataKey="B"
                   stroke="#82ca9d"
                   fill="#82ca9d"
-                  fillOpacity={0.3}
+                  fillOpacity={0.6}
+                  animationDuration={1500}
+                  animationBegin={600}
                 />
               )}
               <Tooltip 
                 formatter={(value: number) => [`${value}%`, '']}
-                contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--background))',
+                  borderColor: 'hsl(var(--border))',
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
               />
-              <Legend />
+              <Legend 
+                align="center"
+                verticalAlign="bottom"
+                iconType="circle"
+                iconSize={10}
+                formatter={(value) => <span className="text-sm font-medium">{value}</span>}
+              />
             </RadarChart>
           </ResponsiveContainer>
         </div>

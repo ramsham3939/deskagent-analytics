@@ -22,12 +22,13 @@ const CallTransferChart: React.FC<CallTransferChartProps> = ({
     { name: 'Not Transferred', value: nonTransferRate }
   ];
   
+  // Enhanced color palette with better contrast
   const COLORS = ['#8884d8', '#82ca9d'];
   
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle>{title}</CardTitle>
+    <Card className="h-full shadow-md hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="pb-2 bg-gradient-to-r from-card to-background rounded-t-lg">
+        <CardTitle className="text-lg">{title}</CardTitle>
         <CardDescription>{subtitle}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -43,19 +44,37 @@ const CallTransferChart: React.FC<CallTransferChartProps> = ({
                 paddingAngle={5}
                 dataKey="value"
                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                animationDuration={1500}
+                animationBegin={300}
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]} 
+                    stroke="hsl(var(--background))" 
+                    strokeWidth={2}
+                  />
                 ))}
               </Pie>
               <Tooltip
                 formatter={(value: number) => [`${value}%`, 'Percentage']}
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--background))',
+                  borderColor: 'hsl(var(--border))',
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
               />
-              <Legend />
+              <Legend 
+                verticalAlign="bottom" 
+                iconType="circle" 
+                iconSize={10}
+                formatter={(value) => <span className="text-sm font-medium">{value}</span>}
+              />
             </PieChart>
           </ResponsiveContainer>
-          <div className="text-center mt-4">
-            <p className="text-lg font-bold">{transferRate}%</p>
+          <div className="text-center mt-2">
+            <p className="text-xl font-bold text-primary">{transferRate}%</p>
             <p className="text-sm text-muted-foreground">Calls Transferred</p>
           </div>
         </div>
