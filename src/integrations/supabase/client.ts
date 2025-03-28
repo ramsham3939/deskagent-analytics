@@ -11,28 +11,59 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// Helper function to create chart data - using raw API calls instead of typed client
-export async function createOrGetChartData() {
-  // Check if chart data exists using a stored procedure
-  const { data: existingData, error: checkError } = await supabase.rpc('check_chart_data_exists');
+// Helper function to get chart data
+export async function getChartData() {
+  // Check if chart data exists
+  const { data: chartData, error } = await supabase
+    .from('call_trends')
+    .select('*');
 
-  if (checkError) {
-    console.error('Error checking chart data:', checkError);
-    return;
+  if (error) {
+    console.error('Error checking chart data:', error);
+    return null;
   }
 
-  if (existingData && existingData.length > 0) {
-    console.log('Chart data already exists');
-    return;
-  }
+  return chartData;
+}
 
-  // If no data exists, invoke the edge function to create it
-  const { data, error } = await supabase.functions.invoke('initialize-chart-data');
+// Helper function to get metrics data (for dashboard)
+export async function getDashboardMetrics() {
+  const { data, error } = await supabase
+    .from('dashboard_stats')
+    .select('*');
   
   if (error) {
-    console.error('Error initializing chart data:', error);
-    return;
+    console.error('Error fetching dashboard metrics:', error);
+    return null;
   }
   
-  console.log('Chart data created successfully:', data);
+  return data;
+}
+
+// Helper function to get executive performance data
+export async function getExecutivePerformance() {
+  const { data, error } = await supabase
+    .from('executive_performance')
+    .select('*');
+  
+  if (error) {
+    console.error('Error fetching executive performance:', error);
+    return null;
+  }
+  
+  return data;
+}
+
+// Helper function to get sentiment distribution data
+export async function getSentimentDistribution() {
+  const { data, error } = await supabase
+    .from('sentiment_distribution')
+    .select('*');
+  
+  if (error) {
+    console.error('Error fetching sentiment distribution:', error);
+    return null;
+  }
+  
+  return data;
 }

@@ -5,16 +5,18 @@ export async function initializeDatabase() {
   try {
     console.log("Initializing database...");
     
-    // Use a raw query to check if we need to initialize chart data
+    // Check if we already have chart data in our existing tables
     const { data: chartData, error } = await supabase
-      .rpc('check_chart_data_exists');
+      .from('call_trends')
+      .select('*')
+      .limit(1);
     
     if (error) {
       console.error("Error checking chart data:", error);
       return;
     }
     
-    if (!chartData) {
+    if (!chartData || chartData.length === 0) {
       console.log("Initializing chart data...");
       
       // Invoke the function to initialize chart data
