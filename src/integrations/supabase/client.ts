@@ -11,85 +11,28 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// Helper function to create chart data
+// Helper function to create chart data - using raw API calls instead of typed client
 export async function createOrGetChartData() {
-  const { data: existingData } = await supabase
-    .from('chart_data')
-    .select('*')
-    .limit(1);
+  // Check if chart data exists using a stored procedure
+  const { data: existingData, error: checkError } = await supabase.rpc('check_chart_data_exists');
+
+  if (checkError) {
+    console.error('Error checking chart data:', checkError);
+    return;
+  }
 
   if (existingData && existingData.length > 0) {
     console.log('Chart data already exists');
     return;
   }
 
-  // Sample chart data categories
-  const categories = [
-    'Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
+  // If no data exists, invoke the edge function to create it
+  const { data, error } = await supabase.functions.invoke('initialize-chart-data');
   
-  // Sample chart data metrics
-  const labels = [
-    'Revenue', 'Calls', 'Resolution Rate', 'Customer Satisfaction', 
-    'Call Duration', 'Agent Performance'
-  ];
-  
-  // Generate sample data
-  const sampleData = [];
-  
-  for (const label of labels) {
-    for (const category of categories) {
-      // Generate random value based on the label
-      let value = 0;
-      let chartType = 'all';
-      
-      switch (label) {
-        case 'Revenue':
-          value = Math.floor(Math.random() * 10000) + 5000;
-          break;
-        case 'Calls':
-          value = Math.floor(Math.random() * 500) + 100;
-          break;
-        case 'Resolution Rate':
-          value = Math.floor(Math.random() * 30) + 70;
-          break;
-        case 'Customer Satisfaction':
-          value = Math.floor(Math.random() * 2) + 3;
-          break;
-        case 'Call Duration':
-          value = Math.floor(Math.random() * 10) + 2;
-          break;
-        case 'Agent Performance':
-          value = Math.floor(Math.random() * 20) + 80;
-          break;
-        default:
-          value = Math.floor(Math.random() * 100);
-      }
-      
-      sampleData.push({
-        label,
-        category,
-        value,
-        chart_type: chartType
-      });
-    }
+  if (error) {
+    console.error('Error initializing chart data:', error);
+    return;
   }
   
-  // Batch insert data into chart_data table
-  const batchSize = 50;
-  for (let i = 0; i < sampleData.length; i += batchSize) {
-    const batch = sampleData.slice(i, i + batchSize);
-    
-    const { error } = await supabase
-      .from('chart_data')
-      .insert(batch);
-    
-    if (error) {
-      console.error('Error inserting chart data:', error);
-      return;
-    }
-  }
-  
-  console.log('Chart data created successfully');
+  console.log('Chart data created successfully:', data);
 }

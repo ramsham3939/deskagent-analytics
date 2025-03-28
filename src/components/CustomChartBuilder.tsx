@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Card, 
@@ -38,13 +37,8 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { supabase, createOrGetChartData } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
 import { RefreshCw, Download, BarChart2, PieChart as PieChartIcon, LineChart as LineChartIcon, Activity } from 'lucide-react';
 
 // Define chart type options
@@ -88,8 +82,12 @@ const CustomChartBuilder = () => {
   useEffect(() => {
     const initializeData = async () => {
       try {
-        await createOrGetChartData();
-        setIsInitialized(true);
+        const { data, error } = await supabase.rpc('check_chart_data_exists');
+        if (error) {
+          console.error('Error checking chart data:', error);
+        } else {
+          setIsInitialized(true);
+        }
       } catch (error) {
         console.error('Error initializing chart data:', error);
       }
@@ -107,25 +105,28 @@ const CustomChartBuilder = () => {
     }
   }, [isInitialized]);
 
-  // Fetch unique labels and categories from the chart_data table
+  // Fetch unique labels and categories using custom RPC functions
   const fetchAvailableOptions = async () => {
     try {
       setLoading(true);
       
-      // Fetch all chart data to extract unique labels and categories
-      const { data, error } = await supabase
-        .from('chart_data')
-        .select('*');
+      // Fetch unique labels using RPC
+      const { data: labels, error: labelsError } = await supabase
+        .rpc('get_chart_data_labels');
       
-      if (error) {
-        throw error;
+      if (labelsError) {
+        throw labelsError;
       }
       
-      if (data) {
-        // Extract unique labels and categories
-        const labels = [...new Set(data.map(item => item.label))];
-        const categories = [...new Set(data.map(item => item.category))];
-        
+      // Fetch unique categories using RPC
+      const { data: categories, error: categoriesError } = await supabase
+        .rpc('get_chart_data_categories');
+      
+      if (categoriesError) {
+        throw categoriesError;
+      }
+      
+      if (labels && categories) {
         setAvailableLabels(labels);
         setAvailableCategories(categories);
         
@@ -155,28 +156,20 @@ const CustomChartBuilder = () => {
     try {
       setLoading(true);
       
-      let query = supabase
-        .from('chart_data')
-        .select('*');
-      
-      if (selectedLabel) {
-        query = query.eq('label', selectedLabel);
-      }
-      
-      const { data, error } = await query;
+      // Use custom RPC function to get filtered chart data
+      const { data, error } = await supabase
+        .rpc('get_chart_data_by_label', { label_filter: selectedLabel });
       
       if (error) {
         throw error;
       }
       
       if (data && data.length > 0) {
-        // Filter and format data for the chart
-        const formattedData: DataItem[] = data
-          .filter(item => item.chart_type === chartType || item.chart_type === 'all')
-          .map(item => ({
-            name: item.category,
-            value: item.value
-          }));
+        // Format data for the chart
+        const formattedData: DataItem[] = data.map((item: ChartData) => ({
+          name: item.category,
+          value: item.value
+        }));
         
         // Sort data for better visualization
         formattedData.sort((a, b) => b.value - a.value);

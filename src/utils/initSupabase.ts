@@ -5,21 +5,23 @@ export async function initializeDatabase() {
   try {
     console.log("Initializing database...");
     
-    // Check if we need to initialize chart data
-    const { data: chartData } = await supabase
-      .from('chart_data')
-      .select('id')
-      .limit(1)
-      .maybeSingle();
+    // Use a raw query to check if we need to initialize chart data
+    const { data: chartData, error } = await supabase
+      .rpc('check_chart_data_exists');
+    
+    if (error) {
+      console.error("Error checking chart data:", error);
+      return;
+    }
     
     if (!chartData) {
       console.log("Initializing chart data...");
       
       // Invoke the function to initialize chart data
-      const { data, error } = await supabase.functions.invoke('initialize-chart-data');
+      const { data, error: funcError } = await supabase.functions.invoke('initialize-chart-data');
       
-      if (error) {
-        console.error("Error initializing chart data:", error);
+      if (funcError) {
+        console.error("Error initializing chart data:", funcError);
       } else {
         console.log("Chart data initialization response:", data);
       }
