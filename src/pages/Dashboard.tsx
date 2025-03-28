@@ -109,10 +109,13 @@ const Dashboard = () => {
 
   const getStatTrend = (statName: string): { value: number; isPositive: boolean } | undefined => {
     const stat = stats[statName];
-    if (stat?.trend_value !== null && stat?.trend_is_positive !== null) {
+    if (!stat) return undefined;
+    
+    if (stat.trend_value !== null && stat.trend_value !== undefined && 
+        stat.trend_is_positive !== null && stat.trend_is_positive !== undefined) {
       return {
-        value: stat.trend_value || 0,
-        isPositive: stat.trend_is_positive || false
+        value: stat.trend_value,
+        isPositive: stat.trend_is_positive
       };
     }
     return undefined;
