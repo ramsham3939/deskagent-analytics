@@ -9,6 +9,10 @@ import { useToast } from '@/components/ui/use-toast';
 import HourlyCallVolumeChart from '@/components/HourlyCallVolumeChart';
 import CallDurationChart from '@/components/CallDurationChart';
 import ResolutionGaugeChart from '@/components/ResolutionGaugeChart';
+import CallTransferChart from '@/components/CallTransferChart';
+import FCRChart from '@/components/FCRChart';
+import ProductivityRadarChart from '@/components/ProductivityRadarChart';
+import SLAComplianceChart from '@/components/SLAComplianceChart';
 
 const ExecutiveDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -123,6 +127,25 @@ const ExecutiveDetails = () => {
     { duration: '10+ min', count: 32 }
   ];
 
+  // Sample data for FCRChart
+  const fcrData = [
+    { category: 'Technical', rate: 88 },
+    { category: 'Billing', rate: 82 },
+    { category: 'General', rate: 95 },
+    { category: 'Product', rate: 78 },
+    { category: 'Support', rate: 91 }
+  ];
+
+  // Sample data for ProductivityRadarChart
+  const productivityData = [
+    { subject: 'Call Volume', A: 85, B: 65, fullMark: 100 },
+    { subject: 'Response Time', A: 90, B: 80, fullMark: 100 },
+    { subject: 'Handling Time', A: 75, B: 95, fullMark: 100 },
+    { subject: 'Resolution Rate', A: 88, B: 76, fullMark: 100 },
+    { subject: 'Satisfaction', A: 92, B: 84, fullMark: 100 },
+    { subject: 'Sentiment', A: 78, B: 90, fullMark: 100 },
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-4">
@@ -160,6 +183,36 @@ const ExecutiveDetails = () => {
           value={92}
           title="First Call Resolution Rate"
           subtitle="Percentage of issues resolved on first contact"
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <CallTransferChart 
+          title="Call Transfer Rate"
+          subtitle="Percentage of calls transferred to another department"
+          transferRate={15}
+        />
+        
+        <FCRChart 
+          title="First Call Resolution Rate by Category"
+          subtitle="Percentage of issues resolved without follow-up"
+          data={fcrData}
+        />
+        
+        <SLAComplianceChart 
+          title="SLA Compliance Rate"
+          subtitle="Percentage of calls resolved within committed time"
+          compliance={88}
+          target={90}
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+        <ProductivityRadarChart 
+          title="Executive's Productivity Score"
+          subtitle="Performance comparison across key metrics"
+          data={productivityData}
+          executives={[executive.name, 'Team Average']}
         />
       </div>
     </div>
