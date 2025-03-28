@@ -62,11 +62,11 @@ const ExecutiveDetails = () => {
           ],
           dominantEmotion: 'Satisfied',
           emotionsComparisonData: [
-            { day: 'Monday', positive: 65, neutral: 25, negative: 10 },
-            { day: 'Tuesday', positive: 70, neutral: 20, negative: 10 },
-            { day: 'Wednesday', positive: 75, neutral: 15, negative: 10 },
-            { day: 'Thursday', positive: 80, neutral: 15, negative: 5 },
-            { day: 'Friday', positive: 85, neutral: 10, negative: 5 }
+            { name: 'Monday', customer: 65, executive: 10 },
+            { name: 'Tuesday', customer: 70, executive: 20 },
+            { name: 'Wednesday', customer: 75, executive: 15 },
+            { name: 'Thursday', customer: 80, executive: 15 },
+            { name: 'Friday', customer: 85, executive: 10 }
           ],
           topTopics: [
             { topic: 'Account Issues', count: 45 },
@@ -114,6 +114,15 @@ const ExecutiveDetails = () => {
     );
   }
 
+  // Sample data for CallDurationChart
+  const callDurationData = [
+    { duration: '0-1 min', count: 45 },
+    { duration: '1-3 min', count: 87 },
+    { duration: '3-5 min', count: 123 },
+    { duration: '5-10 min', count: 68 },
+    { duration: '10+ min', count: 32 }
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-4">
@@ -142,6 +151,7 @@ const ExecutiveDetails = () => {
         />
         
         <CallDurationChart 
+          data={callDurationData}
           title="Call Duration Distribution"
           subtitle="Duration breakdown of handled calls"
         />
