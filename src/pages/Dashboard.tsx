@@ -10,18 +10,25 @@ import {
   BarChart2,
   TrendingUp,
   Clock,
+  Calendar,
+  Activity,
 } from 'lucide-react';
 import {
   AreaChart,
   Area,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LineChart,
+  Line,
+  Legend,
 } from 'recharts';
 import CustomChartBuilder from '@/components/CustomChartBuilder';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,12 +51,19 @@ interface SentimentDistribution {
   percentage: number;
 }
 
+interface HourlyActivity {
+  hour: string;
+  calls: number;
+}
+
 const Dashboard = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Record<string, DashboardStat>>({});
   const [callTrendData, setCallTrendData] = useState<CallTrend[]>([]);
   const [sentimentData, setSentimentData] = useState<SentimentDistribution[]>([]);
+  const [hourlyActivityData, setHourlyActivityData] = useState<HourlyActivity[]>([]);
+  const [performanceData, setPerformanceData] = useState<Array<{name: string, value: number}>>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -87,10 +101,26 @@ const Dashboard = () => {
         .select('*');
       
       if (sentimentsError) throw sentimentsError;
+
+      // Fetch executive performance
+      const { data: executives, error: executivesError } = await supabase
+        .from('executive_performance')
+        .select('*')
+        .limit(5);
+      
+      if (executivesError) throw executivesError;
+      
+      // Generate hourly activity data (mock data as we don't have this in DB)
+      const mockHourlyData = generateHourlyActivityData();
       
       setStats(statsRecord);
       setCallTrendData(callTrends || []);
       setSentimentData(sentiments || []);
+      setHourlyActivityData(mockHourlyData);
+      setPerformanceData((executives || []).map(exec => ({
+        name: exec.executive_name,
+        value: exec.performance_score
+      })));
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast({
@@ -101,6 +131,27 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateHourlyActivityData = (): HourlyActivity[] => {
+    const hours = [
+      '8AM', '9AM', '10AM', '11AM', '12PM', 
+      '1PM', '2PM', '3PM', '4PM', '5PM'
+    ];
+    
+    return hours.map(hour => {
+      let calls;
+      // Create a pattern that peaks mid morning and after lunch
+      if (hour === '10AM' || hour === '2PM') {
+        calls = Math.floor(Math.random() * 20) + 40; // Peak hours
+      } else if (hour === '12PM') {
+        calls = Math.floor(Math.random() * 15) + 15; // Lunch lull
+      } else {
+        calls = Math.floor(Math.random() * 25) + 25; // Normal hours
+      }
+      
+      return { hour, calls };
+    });
   };
 
   const getStatValue = (statName: string): number => {
@@ -120,6 +171,9 @@ const Dashboard = () => {
     }
     return undefined;
   };
+
+  // Colors for charts
+  const COLORS = ['#4ade80', '#94a3b8', '#f87171', '#60a5fa', '#f59e0b'];
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -291,6 +345,118 @@ const Dashboard = () => {
                       ))}
                     </Bar>
                   </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* New charts */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        {/* Top Performers Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Performers</CardTitle>
+            <CardDescription>Top 5 executives by performance score</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={performanceData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={60}
+                      axisLine={false}
+                      tickLine={false} 
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-background border border-border p-2 rounded-md shadow-sm">
+                              <p className="font-medium">{label}</p>
+                              <p className="text-primary">{`Performance: ${payload[0].value}`}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="value" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hourly Call Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Hourly Call Distribution</CardTitle>
+            <CardDescription>Number of calls by hour of day</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={hourlyActivityData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis 
+                      dataKey="hour" 
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-background border border-border p-2 rounded-md shadow-sm">
+                              <p className="font-medium">{label}</p>
+                              <p className="text-primary">{`Calls: ${payload[0].value}`}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="calls" 
+                      stroke="#8b5cf6" 
+                      strokeWidth={2}
+                      dot={{ fill: '#8b5cf6', r: 4 }}
+                      activeDot={{ r: 6, strokeWidth: 0 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               )}
             </div>

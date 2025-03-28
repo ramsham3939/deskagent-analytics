@@ -41,8 +41,7 @@ const App = () => {
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="executives" element={<Executives />} />
                 <Route path="executives/:id" element={<ExecutiveDetails />} />
-                <Route path="analytics" element={<Dashboard />} /> {/* Placeholder */}
-                <Route path="settings" element={<Dashboard />} /> {/* Placeholder */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Route>
               
               {/* 404 route */}

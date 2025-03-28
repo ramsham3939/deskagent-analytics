@@ -6,8 +6,6 @@ import { toast } from 'sonner';
 import {
   LayoutDashboard,
   Users,
-  BarChart3,
-  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -67,18 +65,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             to="/executives"
             icon={<Users size={20} />}
             label="Executives"
-            isOpen={isOpen}
-          />
-          <SidebarItem
-            to="/analytics"
-            icon={<BarChart3 size={20} />}
-            label="Analytics"
-            isOpen={isOpen}
-          />
-          <SidebarItem
-            to="/settings"
-            icon={<Settings size={20} />}
-            label="Settings"
             isOpen={isOpen}
           />
         </ul>

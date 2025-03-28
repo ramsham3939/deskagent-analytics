@@ -6,6 +6,9 @@ import { executives, generateExecutiveStats } from '@/utils/mockData';
 import { Executive, ExecutiveStats as ExecutiveStatsType } from '@/utils/types';
 import ExecutiveStats from '@/components/ExecutiveStats';
 import { ArrowLeft } from 'lucide-react';
+import CallEfficiencyChart from '@/components/CallEfficiencyChart';
+import PerformanceKPIChart from '@/components/PerformanceKPIChart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ExecutiveDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +45,51 @@ const ExecutiveDetails = () => {
     navigate('/executives');
   };
 
+  // Generate call efficiency data based on the executive
+  const generateCallEfficiencyData = () => {
+    if (!executive) return [];
+    
+    // Create call efficiency data with random but realistic values
+    return [
+      { 
+        category: 'Technical', 
+        resolved: Math.min(95, Math.floor(60 + (executive.performance / 10))), 
+        pending: Math.max(5, Math.floor(40 - (executive.performance / 10)))
+      },
+      { 
+        category: 'Billing', 
+        resolved: Math.min(95, Math.floor(65 + (executive.performance / 8))), 
+        pending: Math.max(5, Math.floor(35 - (executive.performance / 8)))
+      },
+      { 
+        category: 'Product', 
+        resolved: Math.min(95, Math.floor(55 + (executive.performance / 9))), 
+        pending: Math.max(5, Math.floor(45 - (executive.performance / 9)))
+      },
+      { 
+        category: 'General', 
+        resolved: Math.min(95, Math.floor(70 + (executive.performance / 7))), 
+        pending: Math.max(5, Math.floor(30 - (executive.performance / 7)))
+      }
+    ];
+  };
+
+  // Generate KPI data for the radar chart
+  const generateKPIData = () => {
+    if (!executive || !stats) return [];
+    
+    const baseValue = (executive.performance / 100) * 80; // Base value derived from performance
+    
+    return [
+      { subject: 'Efficiency', value: Math.floor(baseValue + Math.random() * 20), fullMark: 100 },
+      { subject: 'Resolution', value: Math.floor(stats.resolvedRate), fullMark: 100 },
+      { subject: 'Satisfaction', value: Math.floor(executive.satisfactionScore * 10), fullMark: 100 },
+      { subject: 'Speed', value: Math.floor(100 - (executive.averageHandlingTime * 5)), fullMark: 100 },
+      { subject: 'Accuracy', value: Math.floor(baseValue + Math.random() * 15), fullMark: 100 },
+      { subject: 'Empathy', value: Math.floor(baseValue + Math.random() * 15), fullMark: 100 },
+    ];
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -68,6 +116,14 @@ const ExecutiveDetails = () => {
       </div>
     );
   }
+
+  // Additional performance metrics to show
+  const additionalMetrics = [
+    { name: 'Calls Per Day', value: Math.floor(stats.totalCalls / 30), format: '', color: 'text-blue-500' },
+    { name: 'Avg Call Duration', value: executive.averageHandlingTime, format: 'min', color: 'text-purple-500' },
+    { name: 'Resolution Rate', value: Math.round(stats.resolvedRate), format: '%', color: 'text-green-500' },
+    { name: 'Customer Retention', value: Math.floor(70 + (executive.performance / 4)), format: '%', color: 'text-yellow-500' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -104,6 +160,36 @@ const ExecutiveDetails = () => {
             {executive.status.charAt(0).toUpperCase() + executive.status.slice(1)}
           </span>
         </div>
+      </div>
+      
+      {/* Additional Metrics Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>Performance At-a-Glance</CardTitle>
+          <CardDescription>Key performance indicators</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {additionalMetrics.map((metric, index) => (
+              <div key={index} className="bg-secondary/30 p-4 rounded-lg text-center">
+                <p className="text-muted-foreground text-sm">{metric.name}</p>
+                <p className={`text-2xl font-bold ${metric.color}`}>
+                  {metric.value}{metric.format}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* New charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CallEfficiencyChart data={generateCallEfficiencyData()} />
+        <PerformanceKPIChart 
+          data={generateKPIData()} 
+          title={`${executive.name}'s Performance KPIs`}
+          subtitle="Key performance indicators by area"
+        />
       </div>
       
       <ExecutiveStats executive={executive} stats={stats} />
