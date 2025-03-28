@@ -1,7 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import StatisticCard from '@/components/StatisticCard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
 import {
   Phone,
   Users,
@@ -10,29 +16,16 @@ import {
   BarChart2,
   TrendingUp,
   Clock,
-  Calendar,
-  Activity,
 } from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  LineChart,
-  Line,
-  Legend,
-} from 'recharts';
 import CustomChartBuilder from '@/components/CustomChartBuilder';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import PeakCallHoursChart from '@/components/PeakCallHoursChart';
+import CallStatusChart from '@/components/CallStatusChart';
+import CategoryCallsChart from '@/components/CategoryCallsChart';
+import SatisfactionScoreChart from '@/components/SatisfactionScoreChart';
+import PerformanceScorecard from '@/components/PerformanceScorecard';
+import AgentComparisonChart from '@/components/AgentComparisonChart';
 
 interface DashboardStat {
   stat_name: string;
@@ -51,18 +44,12 @@ interface SentimentDistribution {
   percentage: number;
 }
 
-interface HourlyActivity {
-  hour: string;
-  calls: number;
-}
-
 const Dashboard = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Record<string, DashboardStat>>({});
   const [callTrendData, setCallTrendData] = useState<CallTrend[]>([]);
   const [sentimentData, setSentimentData] = useState<SentimentDistribution[]>([]);
-  const [hourlyActivityData, setHourlyActivityData] = useState<HourlyActivity[]>([]);
   const [performanceData, setPerformanceData] = useState<Array<{name: string, value: number}>>([]);
 
   useEffect(() => {
@@ -110,13 +97,9 @@ const Dashboard = () => {
       
       if (executivesError) throw executivesError;
       
-      // Generate hourly activity data (mock data as we don't have this in DB)
-      const mockHourlyData = generateHourlyActivityData();
-      
       setStats(statsRecord);
       setCallTrendData(callTrends || []);
       setSentimentData(sentiments || []);
-      setHourlyActivityData(mockHourlyData);
       setPerformanceData((executives || []).map(exec => ({
         name: exec.executive_name,
         value: exec.performance_score
@@ -131,27 +114,6 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateHourlyActivityData = (): HourlyActivity[] => {
-    const hours = [
-      '8AM', '9AM', '10AM', '11AM', '12PM', 
-      '1PM', '2PM', '3PM', '4PM', '5PM'
-    ];
-    
-    return hours.map(hour => {
-      let calls;
-      // Create a pattern that peaks mid morning and after lunch
-      if (hour === '10AM' || hour === '2PM') {
-        calls = Math.floor(Math.random() * 20) + 40; // Peak hours
-      } else if (hour === '12PM') {
-        calls = Math.floor(Math.random() * 15) + 15; // Lunch lull
-      } else {
-        calls = Math.floor(Math.random() * 25) + 25; // Normal hours
-      }
-      
-      return { hour, calls };
-    });
   };
 
   const getStatValue = (statName: string): number => {
@@ -172,9 +134,6 @@ const Dashboard = () => {
     return undefined;
   };
 
-  // Colors for charts
-  const COLORS = ['#4ade80', '#94a3b8', '#f87171', '#60a5fa', '#f59e0b'];
-
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -183,9 +142,6 @@ const Dashboard = () => {
           Overview of call center performance and key metrics
         </p>
       </div>
-
-      {/* Custom Chart Builder */}
-      <CustomChartBuilder />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatisticCard
@@ -217,253 +173,56 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+      {/* Top row charts */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Call Volume</CardTitle>
             <CardDescription>Daily call volume for the past week</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={callTrendData}
-                    margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorCalls" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="day_name" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                    />
-                    <YAxis 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                    />
-                    <Tooltip 
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-background border border-border p-2 rounded-md shadow-sm">
-                              <p className="font-medium">{`${label}`}</p>
-                              <p className="text-primary">{`Calls: ${payload[0].value}`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="call_count"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      fill="url(#colorCalls)"
-                      activeDot={{ r: 6, strokeWidth: 0 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </div>
+            {!loading && (
+              <CategoryCallsChart 
+                title="Call Volume by Category"
+                subtitle="Distribution of calls by category type"
+              />
+            )}
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Sentiment Analysis</CardTitle>
-            <CardDescription>Distribution of customer sentiment</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={sentimentData}
-                    margin={{ top: 20, right: 0, left: 0, bottom: 5 }}
-                    layout="vertical"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis 
-                      type="number" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                    />
-                    <YAxis 
-                      type="category" 
-                      dataKey="sentiment_type" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                      width={80}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-background border border-border p-2 rounded-md shadow-sm">
-                              <p className="font-medium">{`${label} Sentiment`}</p>
-                              <p className="text-primary">{`${payload[0].value}%`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar 
-                      dataKey="percentage" 
-                      animationDuration={1000}
-                    >
-                      {sentimentData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`}
-                          fill={
-                            entry.sentiment_type === 'positive' 
-                              ? '#4ade80' 
-                              : entry.sentiment_type === 'neutral' 
-                                ? '#94a3b8' 
-                                : '#f87171'
-                          }
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <CallStatusChart 
+          title="Call Status Breakdown"
+          subtitle="Distribution of answered, missed, and dropped calls" 
+        />
       </div>
 
-      {/* New charts */}
+      {/* Agent comparison and scorecard */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        {/* Top Performers Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Performers</CardTitle>
-            <CardDescription>Top 5 executives by performance score</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={performanceData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis 
-                      dataKey="name" 
-                      angle={-45} 
-                      textAnchor="end" 
-                      height={60}
-                      axisLine={false}
-                      tickLine={false} 
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-background border border-border p-2 rounded-md shadow-sm">
-                              <p className="font-medium">{label}</p>
-                              <p className="text-primary">{`Performance: ${payload[0].value}`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar dataKey="value" fill="#60a5fa" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Hourly Call Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Hourly Call Distribution</CardTitle>
-            <CardDescription>Number of calls by hour of day</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={hourlyActivityData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis 
-                      dataKey="hour" 
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-background border border-border p-2 rounded-md shadow-sm">
-                              <p className="font-medium">{label}</p>
-                              <p className="text-primary">{`Calls: ${payload[0].value}`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="calls" 
-                      stroke="#8b5cf6" 
-                      strokeWidth={2}
-                      dot={{ fill: '#8b5cf6', r: 4 }}
-                      activeDot={{ r: 6, strokeWidth: 0 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <AgentComparisonChart 
+          title="Agent Performance Comparison"
+          subtitle="Call volume and handling time by executive"
+        />
+        
+        <SatisfactionScoreChart 
+          title="Customer Satisfaction Score"
+          subtitle="CSAT scores by period"
+        />
       </div>
 
+      {/* Peak hours heatmap */}
+      <PeakCallHoursChart 
+        title="Peak Call Hours"
+        subtitle="Call volume heatmap by day and hour"
+      />
+
+      {/* Agent performance scorecard */}
+      <PerformanceScorecard 
+        data={[]}
+        title="Executive Performance Scorecard"
+        subtitle="Key performance metrics for call center executives"
+      />
+
+      {/* Bottom stats row */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatisticCard
           title="Resolved Calls"
@@ -494,6 +253,9 @@ const Dashboard = () => {
           description="Growth compared to last month"
         />
       </div>
+
+      {/* Custom Chart Builder */}
+      <CustomChartBuilder />
     </div>
   );
 };

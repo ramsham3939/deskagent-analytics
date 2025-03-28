@@ -1,16 +1,10 @@
 
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import {
-  LayoutDashboard,
-  Users,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Phone,
-} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { BarChart, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,96 +12,90 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
-  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('user');
-    toast.success('Logged out successfully');
-    navigate('/login');
-  };
+  const menuItems = [
+    {
+      icon: <BarChart className="h-5 w-5" />,
+      label: 'Dashboard',
+      href: '/dashboard',
+    },
+    {
+      icon: <Users className="h-5 w-5" />,
+      label: 'Executives',
+      href: '/executives',
+    }
+  ];
 
   return (
     <aside
-      className={`${
-        isOpen ? 'w-64' : 'w-20'
-      } bg-card border-r border-border transition-all duration-300 ease-in-out flex flex-col`}
+      className={cn(
+        'h-screen bg-card border-r border-border transition-all duration-300 ease-in-out flex flex-col',
+        isOpen ? 'w-56' : 'w-16'
+      )}
     >
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        <div className={`flex items-center ${!isOpen && 'justify-center w-full'}`}>
-          <Phone className="h-6 w-6 text-primary" />
-          {isOpen && (
-            <span className="ml-2 font-semibold text-xl">Call Admin</span>
+      <div className="p-4 flex justify-between items-center h-16 border-b border-border">
+        <div
+          className={cn(
+            'font-bold text-xl transition-opacity',
+            isOpen ? 'opacity-100' : 'opacity-0 hidden'
           )}
+        >
+          CallTrack
         </div>
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className={`${!isOpen && 'absolute right-0 -mr-4 bg-background border border-border rounded-full shadow-md'}`}
+          className="ml-auto"
         >
           {isOpen ? (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5" />
           ) : (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
           )}
         </Button>
       </div>
 
-      <nav className="flex-1 py-4 px-2">
-        <ul className="space-y-1">
-          <SidebarItem
-            to="/dashboard"
-            icon={<LayoutDashboard size={20} />}
-            label="Dashboard"
-            isOpen={isOpen}
-          />
-          <SidebarItem
-            to="/executives"
-            icon={<Users size={20} />}
-            label="Executives"
-            isOpen={isOpen}
-          />
+      <nav className="flex-1 py-4">
+        <ul className="space-y-1 px-2">
+          {menuItems.map((item, index) => (
+            <li key={index}>
+              <Link to={item.href}>
+                <Button
+                  variant={
+                    location.pathname.startsWith(item.href)
+                      ? 'default'
+                      : 'ghost'
+                  }
+                  className={cn(
+                    'w-full justify-start mb-1',
+                    !isOpen && 'justify-center'
+                  )}
+                >
+                  {item.icon}
+                  {isOpen && <span className="ml-2">{item.label}</span>}
+                </Button>
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-border mt-auto">
-        <Button 
-          variant="ghost" 
-          className={`w-full flex items-center justify-${isOpen ? 'start' : 'center'} text-muted-foreground hover:text-destructive`}
-          onClick={handleLogout}
-        >
-          <LogOut size={20} />
-          {isOpen && <span className="ml-2">Logout</span>}
-        </Button>
+      <div className="mt-auto mb-4">
+        <Separator className="my-4" />
+        <div className="px-4">
+          <div
+            className={cn(
+              'text-xs text-muted-foreground transition-opacity',
+              isOpen ? 'opacity-100' : 'opacity-0'
+            )}
+          >
+            {isOpen ? 'Call Center Analytics' : ''}
+          </div>
+        </div>
       </div>
     </aside>
-  );
-};
-
-interface SidebarItemProps {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-  isOpen: boolean;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, isOpen }) => {
-  return (
-    <li>
-      <NavLink
-        to={to}
-        className={({ isActive }) =>
-          `flex items-center px-3 py-2 rounded-md transition-colors ${
-            isActive
-              ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-          } ${!isOpen && 'justify-center'}`
-        }
-      >
-        {icon}
-        {isOpen && <span className="ml-2 text-sm font-medium">{label}</span>}
-      </NavLink>
-    </li>
   );
 };
 
