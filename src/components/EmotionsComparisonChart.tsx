@@ -14,15 +14,21 @@ interface EmotionsComparisonChartProps {
 }
 
 const EMOTION_COLORS = {
-  'Happy': '#4ade80',      // Green
-  'Satisfied': '#60a5fa',  // Blue
-  'Neutral': '#a78bfa',    // Purple
-  'Confused': '#fbbf24',   // Yellow
-  'Frustrated': '#f87171', // Red
-  'Angry': '#ef4444',      // Bright Red
-  'Calm': '#22c55e',       // Green
-  'Empathetic': '#3b82f6', // Medium Blue
-  'Professional': '#6366f1' // Indigo
+  'Customer': {
+    'Happy': '#4ade80',      // Green
+    'Satisfied': '#60a5fa',  // Blue
+    'Neutral': '#a78bfa',    // Purple
+    'Confused': '#fbbf24',   // Yellow
+    'Frustrated': '#f87171', // Red
+    'Angry': '#ef4444',      // Bright Red
+    'default': '#f97316'     // Orange (default)
+  },
+  'Executive': {
+    'Calm': '#22c55e',       // Green
+    'Empathetic': '#3b82f6', // Medium Blue
+    'Professional': '#6366f1', // Indigo
+    'default': '#60a5fa'     // Blue (default)
+  }
 };
 
 const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data }) => {
@@ -37,10 +43,16 @@ const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data 
     { name: 'Empathetic', customer: 5, executive: 45 }
   ];
 
+  // Function to get emotion color
+  const getEmotionColor = (type: 'customer' | 'executive', emotion: string) => {
+    const colorMap = type === 'customer' ? EMOTION_COLORS.Customer : EMOTION_COLORS.Executive;
+    return colorMap[emotion as keyof typeof colorMap] || colorMap.default;
+  };
+
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">Emotion Comparison</CardTitle>
+    <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+      <CardHeader className="pb-2 bg-gradient-to-r from-card to-background rounded-t-lg">
+        <CardTitle className="text-lg">Emotion Comparison</CardTitle>
         <CardDescription>
           How executives respond to different customer emotional states
         </CardDescription>
@@ -61,28 +73,34 @@ const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data 
               <CartesianGrid strokeDasharray="3 3" opacity={0.15} horizontal={true} vertical={false} />
               <XAxis 
                 type="number"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                tickLine={{ stroke: 'hsl(var(--border))' }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
                 domain={[0, 100]}
                 tickFormatter={(value) => `${value}%`}
               />
               <YAxis 
                 dataKey="name" 
                 type="category"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={{ stroke: '#e5e7eb' }}
+                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                tickLine={{ stroke: 'hsl(var(--border))' }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
                 width={100}
               />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-background border border-border p-2 rounded-md shadow-sm">
-                        <p className="font-medium">{payload[0].payload.name}</p>
-                        <p className="text-sm text-[#f97316]">{`Customer: ${payload[0].value}%`}</p>
-                        <p className="text-sm text-[#60a5fa]">{`Executive: ${payload[1].value}%`}</p>
+                      <div className="bg-card border border-border p-3 rounded-md shadow-sm">
+                        <p className="font-medium text-foreground">{payload[0].payload.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="w-3 h-3 rounded-full bg-[#f97316]"></div>
+                          <p className="text-sm">{`Customer: ${payload[0].value}%`}</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="w-3 h-3 rounded-full bg-[#60a5fa]"></div>
+                          <p className="text-sm">{`Executive: ${payload[1].value}%`}</p>
+                        </div>
                       </div>
                     );
                   }
@@ -92,11 +110,11 @@ const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data 
               <Legend 
                 wrapperStyle={{ fontSize: '12px', marginTop: '10px' }} 
                 formatter={(value) => <span className="text-sm capitalize">{value}</span>}
+                iconType="circle"
               />
               <Bar 
                 dataKey="customer" 
                 name="Customer" 
-                fill="#f97316" 
                 radius={[0, 4, 4, 0]} 
                 barSize={20}
               >
@@ -104,13 +122,13 @@ const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data 
                   <Cell 
                     key={`customer-cell-${index}`} 
                     fill={entry.name === 'Angry' || entry.name === 'Frustrated' ? '#ef4444' : '#f97316'} 
+                    className="transition-all duration-300 hover:opacity-80"
                   />
                 ))}
               </Bar>
               <Bar 
                 dataKey="executive" 
                 name="Executive" 
-                fill="#60a5fa" 
                 radius={[0, 4, 4, 0]} 
                 barSize={20}
               >
@@ -118,11 +136,15 @@ const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data 
                   <Cell 
                     key={`executive-cell-${index}`} 
                     fill={entry.name === 'Calm' || entry.name === 'Professional' || entry.name === 'Empathetic' ? '#22c55e' : '#60a5fa'} 
+                    className="transition-all duration-300 hover:opacity-80"
                   />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+        </div>
+        <div className="mt-4 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+          <p><span className="font-medium">How to read this chart:</span> This visualization shows how executives respond emotionally when customers present different emotional states. The contrast highlights how well executives maintain professional composure.</p>
         </div>
       </CardContent>
     </Card>
