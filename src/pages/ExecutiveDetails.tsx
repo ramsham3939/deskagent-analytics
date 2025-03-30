@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import CallTransferChart from '@/components/CallTransferChart';
 import FCRChart from '@/components/FCRChart';
 import ProductivityRadarChart from '@/components/ProductivityRadarChart';
 import SLAComplianceChart from '@/components/SLAComplianceChart';
+import { executives } from '@/utils/mockData';
 
 const ExecutiveDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,65 +23,56 @@ const ExecutiveDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // This would normally fetch the executive details from an API
-    // For demonstration purposes, we're using mock data
     const fetchExecutiveDetails = async () => {
       try {
         setLoading(true);
         
-        // Simulate API call delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Mock data for a single executive
-        const mockExecutive: Executive = {
-          id: id || '1',
-          name: 'Jane Smith',
-          department: 'Customer Support',
-          email: 'jane.smith@example.com',
-          phone: '+1 (555) 123-4567',
-          avatar: 'https://i.pravatar.cc/150?u=jane',
-          performance: 92,
-          totalCalls: 1245,
-          resolvedCalls: 1150,
-          averageHandlingTime: 4.5,
-          satisfactionScore: 4.8,
-          status: 'online'
-        };
+        const foundExecutive = executives.find(exec => exec.id === id);
         
-        // Mock stats data
+        if (!foundExecutive) {
+          toast({
+            title: "Executive not found",
+            description: `No executive found with ID: ${id}`,
+            variant: "destructive"
+          });
+          return;
+        }
+        
         const mockStats: ExecutiveStatsType = {
-          callsByMonth: [85, 92, 78, 95, 110, 115, 105, 128, 118, 132, 145, 155],
-          resolvedRate: 92.4,
+          callsByMonth: Array.from({ length: 12 }, () => Math.floor(Math.random() * 100) + 50),
+          resolvedRate: 70 + Math.random() * 25,
           sentimentDistribution: {
-            positive: 75,
-            neutral: 15,
-            negative: 10
+            positive: Math.floor(60 + Math.random() * 20),
+            neutral: Math.floor(10 + Math.random() * 20),
+            negative: Math.floor(5 + Math.random() * 10)
           },
           emotionsData: [
-            { name: 'Satisfied', value: 58 },
-            { name: 'Happy', value: 17 },
-            { name: 'Neutral', value: 15 },
-            { name: 'Frustrated', value: 7 },
-            { name: 'Angry', value: 3 }
+            { name: 'Satisfied', value: Math.floor(40 + Math.random() * 30) },
+            { name: 'Happy', value: Math.floor(10 + Math.random() * 20) },
+            { name: 'Neutral', value: Math.floor(10 + Math.random() * 20) },
+            { name: 'Frustrated', value: Math.floor(5 + Math.random() * 10) },
+            { name: 'Angry', value: Math.floor(2 + Math.random() * 5) }
           ],
           dominantEmotion: 'Satisfied',
           emotionsComparisonData: [
-            { name: 'Monday', customer: 65, executive: 10 },
-            { name: 'Tuesday', customer: 70, executive: 20 },
-            { name: 'Wednesday', customer: 75, executive: 15 },
-            { name: 'Thursday', customer: 80, executive: 15 },
-            { name: 'Friday', customer: 85, executive: 10 }
+            { name: 'Monday', customer: Math.floor(50 + Math.random() * 30), executive: Math.floor(5 + Math.random() * 20) },
+            { name: 'Tuesday', customer: Math.floor(50 + Math.random() * 30), executive: Math.floor(5 + Math.random() * 20) },
+            { name: 'Wednesday', customer: Math.floor(50 + Math.random() * 30), executive: Math.floor(5 + Math.random() * 20) },
+            { name: 'Thursday', customer: Math.floor(50 + Math.random() * 30), executive: Math.floor(5 + Math.random() * 20) },
+            { name: 'Friday', customer: Math.floor(50 + Math.random() * 30), executive: Math.floor(5 + Math.random() * 20) }
           ],
           topTopics: [
-            { topic: 'Account Issues', count: 45 },
-            { topic: 'Product Information', count: 38 },
-            { topic: 'Technical Support', count: 32 },
-            { topic: 'Billing Questions', count: 28 },
-            { topic: 'Returns & Refunds', count: 22 }
+            { topic: 'Account Issues', count: Math.floor(30 + Math.random() * 20) },
+            { topic: 'Product Information', count: Math.floor(25 + Math.random() * 20) },
+            { topic: 'Technical Support', count: Math.floor(20 + Math.random() * 20) },
+            { topic: 'Billing Questions', count: Math.floor(15 + Math.random() * 20) },
+            { topic: 'Returns & Refunds', count: Math.floor(10 + Math.random() * 20) }
           ]
         };
         
-        setExecutive(mockExecutive);
+        setExecutive(foundExecutive);
         setStats(mockStats);
       } catch (error) {
         console.error('Error fetching executive details:', error);
@@ -118,32 +109,33 @@ const ExecutiveDetails = () => {
     );
   }
 
-  // Sample data for CallDurationChart
   const callDurationData = [
-    { duration: '0-1 min', count: 45 },
-    { duration: '1-3 min', count: 87 },
-    { duration: '3-5 min', count: 123 },
-    { duration: '5-10 min', count: 68 },
-    { duration: '10+ min', count: 32 }
+    { duration: '0-1 min', count: Math.floor(30 + Math.random() * 30) },
+    { duration: '1-3 min', count: Math.floor(60 + Math.random() * 40) },
+    { duration: '3-5 min', count: Math.floor(80 + Math.random() * 50) },
+    { duration: '5-10 min', count: Math.floor(40 + Math.random() * 40) },
+    { duration: '10+ min', count: Math.floor(20 + Math.random() * 20) }
   ];
 
-  // Sample data for FCRChart
   const fcrData = [
-    { category: 'Technical', rate: 88 },
-    { category: 'Billing', rate: 82 },
-    { category: 'General', rate: 95 },
-    { category: 'Product', rate: 78 },
-    { category: 'Support', rate: 91 }
+    { category: 'Technical', rate: Math.floor(70 + Math.random() * 25) },
+    { category: 'Billing', rate: Math.floor(70 + Math.random() * 25) },
+    { category: 'General', rate: Math.floor(80 + Math.random() * 20) },
+    { category: 'Product', rate: Math.floor(65 + Math.random() * 25) },
+    { category: 'Support', rate: Math.floor(75 + Math.random() * 20) }
   ];
 
-  // Sample data for ProductivityRadarChart
+  const transferRate = Math.floor(5 + Math.random() * 25);
+  const slaCompliance = Math.floor(75 + Math.random() * 20);
+  const slaTarget = 90;
+
   const productivityData = [
-    { subject: 'Call Volume', A: 85, B: 65, fullMark: 100 },
-    { subject: 'Response Time', A: 90, B: 80, fullMark: 100 },
-    { subject: 'Handling Time', A: 75, B: 95, fullMark: 100 },
-    { subject: 'Resolution Rate', A: 88, B: 76, fullMark: 100 },
-    { subject: 'Satisfaction', A: 92, B: 84, fullMark: 100 },
-    { subject: 'Sentiment', A: 78, B: 90, fullMark: 100 },
+    { subject: 'Call Volume', A: Math.floor(70 + Math.random() * 30), B: 65, fullMark: 100 },
+    { subject: 'Response Time', A: Math.floor(70 + Math.random() * 30), B: 80, fullMark: 100 },
+    { subject: 'Handling Time', A: Math.floor(70 + Math.random() * 30), B: 95, fullMark: 100 },
+    { subject: 'Resolution Rate', A: Math.floor(70 + Math.random() * 30), B: 76, fullMark: 100 },
+    { subject: 'Satisfaction', A: Math.floor(70 + Math.random() * 30), B: 84, fullMark: 100 },
+    { subject: 'Sentiment', A: Math.floor(70 + Math.random() * 30), B: 90, fullMark: 100 },
   ];
 
   return (
@@ -180,7 +172,7 @@ const ExecutiveDetails = () => {
         />
         
         <ResolutionGaugeChart 
-          value={92}
+          value={Math.round(stats.resolvedRate)}
           title="First Call Resolution Rate"
           subtitle="Percentage of issues resolved on first contact"
         />
@@ -190,7 +182,7 @@ const ExecutiveDetails = () => {
         <CallTransferChart 
           title="Call Transfer Rate"
           subtitle="Percentage of calls transferred to another department"
-          transferRate={15}
+          transferRate={transferRate}
         />
         
         <FCRChart 
@@ -202,8 +194,8 @@ const ExecutiveDetails = () => {
         <SLAComplianceChart 
           title="SLA Compliance Rate"
           subtitle="Percentage of calls resolved within committed time"
-          compliance={88}
-          target={90}
+          compliance={slaCompliance}
+          target={slaTarget}
         />
       </div>
       
