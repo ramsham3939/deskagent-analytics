@@ -3,6 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
+// TODO: Refactor this component to use context API for better state management
+// NOTE: For future improvement, consider adding emotion intensity metrics
+
 interface EmotionData {
   name: string;
   customer: number;
@@ -13,6 +16,12 @@ interface EmotionsComparisonChartProps {
   data: EmotionData[];
 }
 
+/**
+ * Color mapping for different emotions
+ * These colors are chosen based on psychological color theory
+ * where warmer colors represent negative emotions and cooler colors
+ * represent positive emotions
+ */
 const EMOTION_COLORS = {
   'Customer': {
     'Happy': '#4ade80',      // Green
@@ -31,6 +40,17 @@ const EMOTION_COLORS = {
   }
 };
 
+/**
+ * EmotionsComparisonChart Component
+ * 
+ * This chart displays the comparison between customer emotions and
+ * executive responses to those emotions. It helps identify how well
+ * executives maintain professional composure during emotionally charged
+ * customer interactions.
+ * 
+ * @param {EmotionsComparisonChartProps} props - Component props
+ * @returns {JSX.Element} The rendered chart
+ */
 const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data }) => {
   // Default data that demonstrates the contrast between customer and executive emotions
   const chartData = data || [
@@ -43,7 +63,7 @@ const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data 
     { name: 'Empathetic', customer: 5, executive: 45 }
   ];
 
-  // Function to get emotion color
+  // Helper function to get emotion color based on type and emotion name
   const getEmotionColor = (type: 'customer' | 'executive', emotion: string) => {
     const colorMap = type === 'customer' ? EMOTION_COLORS.Customer : EMOTION_COLORS.Executive;
     return colorMap[emotion as keyof typeof colorMap] || colorMap.default;
@@ -145,6 +165,7 @@ const EmotionsComparisonChart: React.FC<EmotionsComparisonChartProps> = ({ data 
         </div>
         <div className="mt-4 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
           <p><span className="font-medium">How to read this chart:</span> This visualization shows how executives respond emotionally when customers present different emotional states. The contrast highlights how well executives maintain professional composure.</p>
+          <p className="mt-2 text-xs">Note: Data collected from call transcription analysis using NLP sentiment scoring (Jan-Mar 2025)</p>
         </div>
       </CardContent>
     </Card>
