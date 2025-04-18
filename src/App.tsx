@@ -13,12 +13,11 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { useEffect } from "react";
 import { initializeDatabase } from "./utils/initSupabase";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Initialize database when the app loads
   useEffect(() => {
     initializeDatabase();
   }, []);
@@ -30,26 +29,24 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AuthProvider>
-              <Routes>
-                {/* Redirect root to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                
-                {/* Auth routes */}
-                <Route path="/login" element={<Login />} />
-                
-                {/* Protected dashboard routes */}
-                <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="executives" element={<Executives />} />
-                  <Route path="executives/:id" element={<ExecutiveDetails />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Route>
-                
-                {/* 404 route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
+            <Routes>
+              {/* Redirect root to login */}
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              
+              {/* Auth routes */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* Dashboard routes */}
+              <Route path="/" element={<DashboardLayout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="executives" element={<Executives />} />
+                <Route path="executives/:id" element={<ExecutiveDetails />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Route>
+              
+              {/* 404 route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
