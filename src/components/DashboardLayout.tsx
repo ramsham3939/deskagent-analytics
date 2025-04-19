@@ -4,6 +4,9 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { User } from '@/utils/types';
 import { ThemeToggle } from './ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 
 const DashboardLayout = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -19,6 +22,17 @@ const DashboardLayout = () => {
     }
   }, [navigate]);
 
+  const handleLogout = () => {
+    // Clear user session
+    sessionStorage.removeItem('user');
+    
+    // Show logout toast
+    toast.info('Logged out successfully');
+    
+    // Redirect to login page
+    navigate('/login');
+  };
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -32,8 +46,21 @@ const DashboardLayout = () => {
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       
       <div className="flex-1 overflow-auto">
-        <div className="p-4 flex items-center justify-end border-b border-border">
-          <ThemeToggle />
+        <div className="p-4 flex items-center justify-between border-b border-border">
+          <div className="text-sm text-muted-foreground">
+            Welcome, {user.username || 'User'}
+          </div>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         <main className="p-6 md:p-8 pt-6 min-h-[calc(100vh-4rem)]">
           <Outlet />
@@ -44,3 +71,4 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
+
